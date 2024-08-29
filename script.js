@@ -56,14 +56,50 @@ function GameController() {
 
     const getActivePlayer = () => activePlayer;
 
+    const getWinner = (player) => {
+        const gameSymbol = player.token;
+        const renderedGameBoard = board.getBoard();
+
+        // Horizontally
+        let c = 0;
+        for(let r=0; r<3; r++) {
+            if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r][c+1] === gameSymbol) && (renderedGameBoard[r][c+2] === gameSymbol)) {
+                return true;
+            }
+        }
+
+        // Vertically 
+        let r = 0;
+        for(let c=0; c<3; c++) {
+            if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c] === gameSymbol) && (renderedGameBoard[r+2][c] === gameSymbol)) {
+                return true;
+            }
+        }
+
+        // Diagonal
+        c = 0;
+        r = 0;
+        if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c+1] === gameSymbol) && (renderedGameBoard[r+2][c+2] === gameSymbol)) {
+            return true;
+        }
+
+        // Anti-Diagonal
+        c = 2;
+        r = 0;
+        if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c-1] === gameSymbol) && (renderedGameBoard[r+2][c-2] === gameSymbol)) {
+            return true;
+        }
+
+        return false;
+    }
+
     const playRound = (activePlayer, cellNumber) => {
-        console.log(`Placing ${activePlayer}'s token in cell number ${cellNumber}`);
+        console.log(`Placing ${activePlayer.name}'s token in cell number ${cellNumber}`);
 
         let tokenPlaced = board.placeToken(activePlayer.token, cellNumber);
 
         console.log(board.getBoard());
         if(tokenPlaced) {
-
             switchPlayer();
             return true;
         }
@@ -75,27 +111,32 @@ function GameController() {
 
     return { getActivePlayer,
             playRound,
-            getBoard: board.getBoard 
+            getBoard: board.getBoard ,
+            getWinner
         };
 }
 
 const game = GameController();
-
-let activePlayer = game.getActivePlayer();
-let userInput = prompt("Please enter cell number :");
-userInput = parseInt(userInput);
-
-let roundPlayed = game.playRound(activePlayer, userInput);
 let count = 0;
 
-while(count < 8) {
-    activePlayer = game.getActivePlayer();
-    userInput = prompt("Please enter cell number :");
+while(count < 9) {
+    let activePlayer = game.getActivePlayer();
+    console.log(`active player: ${activePlayer.name}`);
+    let userInput = prompt("Please enter cell number(0-8) :");
     userInput = parseInt(userInput);
 
     let roundPlayed = game.playRound(activePlayer, userInput);
-    console.log(game.getBoard());
 
     count++;
     console.log(count);
+
+    const winner = game.getWinner(activePlayer);
+    if(winner===true) {
+        console.log(`${activePlayer.name} with symbol '${activePlayer.token}' won the game.`);
+        break;
+    }
+}
+
+if(count !== 9) {
+    console.log(`It's a tie.`);
 }
