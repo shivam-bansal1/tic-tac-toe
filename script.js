@@ -15,7 +15,20 @@ function GameBoard() {
     // Method to render whole board
     const getBoard = () => board ;
 
-    return { getBoard };
+    const placeToken = (token, cellNumber) => {
+        for(r=0; r<rows; r++) {
+            for(c=0; c<columns; c++) {
+                if((board[r][c] == cellNumber) && (board[r][c] !== token)) {
+                    board[r][c] = token;
+
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    return { getBoard, placeToken };
 }
 
 function GameController() {
@@ -26,11 +39,11 @@ function GameController() {
 
     const players = [
         {
-            player: playerOneName,
+            name: playerOneName,
             token: "x",
         },
         {
-            player: playerTwoName,
+            name: playerTwoName,
             token: "o",
         }
     ]
@@ -43,12 +56,46 @@ function GameController() {
 
     const getActivePlayer = () => activePlayer;
 
-    return { switchPlayer, getActivePlayer};
+    const playRound = (activePlayer, cellNumber) => {
+        console.log(`Placing ${activePlayer}'s token in cell number ${cellNumber}`);
+
+        let tokenPlaced = board.placeToken(activePlayer.token, cellNumber);
+
+        console.log(board.getBoard());
+        if(tokenPlaced) {
+
+            switchPlayer();
+            return true;
+        }
+        else {
+            console.log(`${activePlayer}'s token was not placed !!! \n Please try again`);
+            return false;
+        }
+    };
+
+    return { getActivePlayer,
+            playRound,
+            getBoard: board.getBoard 
+        };
 }
 
 const game = GameController();
-console.log(game.getActivePlayer());
 
-game.switchPlayer();
+let activePlayer = game.getActivePlayer();
+let userInput = prompt("Please enter cell number :");
+userInput = parseInt(userInput);
 
-console.log(game.getActivePlayer());
+let roundPlayed = game.playRound(activePlayer, userInput);
+let count = 0;
+
+while(count < 8) {
+    activePlayer = game.getActivePlayer();
+    userInput = prompt("Please enter cell number :");
+    userInput = parseInt(userInput);
+
+    let roundPlayed = game.playRound(activePlayer, userInput);
+    console.log(game.getBoard());
+
+    count++;
+    console.log(count);
+}
