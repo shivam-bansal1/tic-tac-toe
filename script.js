@@ -2,13 +2,13 @@ function GameBoard() {
     const board = [];
     const rows = 3;
     const columns = 3;
-    let cellNumber = 0;
+    let val = 0;
 
     for(let r=0; r<rows; r++) {
         board[r] = [];
 
         for(let c=0; c<columns; c++) {
-            board[r][c] = cellNumber++;
+            board[r][c] = "";
         }
     }
 
@@ -116,27 +116,66 @@ function GameController() {
         };
 }
 
-const game = GameController();
-let count = 0;
 
-while(count < 9) {
-    let activePlayer = game.getActivePlayer();
-    console.log(`active player: ${activePlayer.name}`);
-    let userInput = prompt("Please enter cell number(0-8) :");
-    userInput = parseInt(userInput);
+function ScreenController() {
+    const game = GameController();
+    const boardDiv = document.querySelector(".game-board");
+    const playerTurnDiv = document.querySelector(".player-turn");
+    
+    const updateScreen = () => {
+        // Clear the game board
+        boardDiv.textContent = "";
+        const board = game.getBoard();
+        const activePlayer = game.getActivePlayer();
 
-    let roundPlayed = game.playRound(activePlayer, userInput);
+        playerTurnDiv.textContent = `${activePlayer.name}'s turn....`;
 
-    count++;
-    console.log(count);
+        // Render board squares
+        board.forEach((row) => {
+            row.forEach((cell) => {
+                const cellButton = document.createElement("button");
+                cellButton.classList.add("board-cell");
+                cellButton.dataset.column = cell;
 
-    const winner = game.getWinner(activePlayer);
-    if(winner===true) {
-        console.log(`${activePlayer.name} with symbol '${activePlayer.token}' won the game.`);
-        break;
+                cellButton.textContent = cell
+                boardDiv.appendChild(cellButton);
+            }); 
+        });
     }
+
+    updateScreen();
+    // for(let i=0; i<rows*columns; i++) {
+    //     boardContainer.innerHTML += `
+    //         <div class='board-cell cell-number-${cellNumber}'></div>
+    //     `;
+    //     cellNumber += 1;
+    // }
 }
 
-if(count !== 9) {
-    console.log(`It's a tie.`);
-}
+// const game = GameController();
+// let count = 0;
+
+// while(count < 9) {
+//     let activePlayer = game.getActivePlayer();
+//     console.log(`active player: ${activePlayer.name}`);
+//     let userInput = prompt("Please enter cell number(0-8) :");
+//     userInput = parseInt(userInput);
+
+//     let roundPlayed = game.playRound(activePlayer, userInput);
+
+//     count++;
+//     console.log(count);
+
+//     const winner = game.getWinner(activePlayer);
+//     if(winner===true) {
+//         console.log(`${activePlayer.name} with symbol '${activePlayer.token}' won the game.`);
+//         break;
+//     }
+// }
+
+// if(count !== 9) {
+//     console.log(`It's a tie.`);
+// }
+
+
+ScreenController();

@@ -1,0 +1,15 @@
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 120px);
+    grid-template-rows: repeat(3, 120px);
+    gap: 5px;
+}
+
+.board-cell {
+    background-color: salmon;
+    border: none;
+}
+
+.player-turn {
+    font-size: 20px;
+}
