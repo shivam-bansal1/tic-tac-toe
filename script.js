@@ -2,31 +2,31 @@ function GameBoard() {
     const board = [];
     const rows = 3;
     const columns = 3;
-    let val = 0;
 
     for(let r=0; r<rows; r++) {
         board[r] = [];
 
         for(let c=0; c<columns; c++) {
-            board[r][c] = "";
+            board[r][c] = " ";
         }
     }
 
-    // Method to render whole board
-    const getBoard = () => board ;
-
-    const placeToken = (token, cellNumber) => {
-        for(r=0; r<rows; r++) {
-            for(c=0; c<columns; c++) {
-                if((board[r][c] == cellNumber) && (board[r][c] !== token)) {
-                    board[r][c] = token;
-
+    const placeToken = (player, cellNumber) => {
+        let cellValue = 0;
+        for(let r=0; r<rows; r++) {
+            for(let c=0; c<columns; c++) {
+                if(cellValue == cellNumber && board[r][c] == " ") {
+                    board[r][c] = player.token;
                     return true;
                 }
+                cellValue++;
             }
         }
         return false;
     }
+
+    // Method to render whole board
+    const getBoard = () => board ;
 
     return { getBoard, placeToken };
 }
@@ -56,14 +56,15 @@ function GameController() {
 
     const getActivePlayer = () => activePlayer;
 
-    const getWinner = (player) => {
-        const gameSymbol = player.token;
+    const getWinner = () => {
+        const gameSymbol = activePlayer.token;
         const renderedGameBoard = board.getBoard();
 
         // Horizontally
         let c = 0;
         for(let r=0; r<3; r++) {
-            if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r][c+1] === gameSymbol) && (renderedGameBoard[r][c+2] === gameSymbol)) {
+            if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r][c+1] === gameSymbol) && 
+                (renderedGameBoard[r][c+2] === gameSymbol)) {
                 return true;
             }
         }
@@ -71,7 +72,8 @@ function GameController() {
         // Vertically 
         let r = 0;
         for(let c=0; c<3; c++) {
-            if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c] === gameSymbol) && (renderedGameBoard[r+2][c] === gameSymbol)) {
+            if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c] === gameSymbol) && 
+                (renderedGameBoard[r+2][c] === gameSymbol)) {
                 return true;
             }
         }
@@ -79,33 +81,35 @@ function GameController() {
         // Diagonal
         c = 0;
         r = 0;
-        if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c+1] === gameSymbol) && (renderedGameBoard[r+2][c+2] === gameSymbol)) {
+        if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c+1] === gameSymbol) && 
+            (renderedGameBoard[r+2][c+2] === gameSymbol)) {
             return true;
         }
 
         // Anti-Diagonal
         c = 2;
         r = 0;
-        if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c-1] === gameSymbol) && (renderedGameBoard[r+2][c-2] === gameSymbol)) {
+        if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c-1] === gameSymbol) && 
+            (renderedGameBoard[r+2][c-2] === gameSymbol)) {
             return true;
         }
 
         return false;
     }
 
-    const playRound = (activePlayer, cellNumber) => {
+    const playRound = (cellNumber) => {
         console.log(`Placing ${activePlayer.name}'s token in cell number ${cellNumber}`);
 
-        let tokenPlaced = board.placeToken(activePlayer.token, cellNumber);
-
-        console.log(board.getBoard());
+        let tokenPlaced = board.placeToken(activePlayer, cellNumber);
         if(tokenPlaced) {
+            const gotAnyWinner = getWinner();
+            if (gotAnyWinner) {
+                console.log(`${activePlayer.name} has won the game`);
+            }
             switchPlayer();
-            return true;
         }
         else {
-            console.log(`${activePlayer}'s token was not placed !!! \n Please try again`);
-            return false;
+            console.log(`${activePlayer.name}'s token was not placed !!! \n Please try again`);
         }
     };
 
@@ -115,7 +119,6 @@ function GameController() {
             getWinner
         };
 }
-
 
 function ScreenController() {
     const game = GameController();
@@ -128,6 +131,7 @@ function ScreenController() {
         const board = game.getBoard();
         const activePlayer = game.getActivePlayer();
 
+        let cellNumber = 0;
         playerTurnDiv.textContent = `${activePlayer.name}'s turn....`;
 
         // Render board squares
@@ -135,47 +139,29 @@ function ScreenController() {
             row.forEach((cell) => {
                 const cellButton = document.createElement("button");
                 cellButton.classList.add("board-cell");
-                cellButton.dataset.column = cell;
+                cellButton.dataset.column = cellNumber;
+                cellNumber++;
 
                 cellButton.textContent = cell
                 boardDiv.appendChild(cellButton);
             }); 
         });
-    }
+        // console.log(board);
+    };
+
+    boardDiv.addEventListener('click', (event) => {
+        const selectedCell = event.target.dataset.column;
+        console.log(selectedCell);
+
+        // Cell is not
+        if (!selectedCell) return;
+
+        game.playRound(selectedCell);
+        updateScreen();
+    });
 
     updateScreen();
-    // for(let i=0; i<rows*columns; i++) {
-    //     boardContainer.innerHTML += `
-    //         <div class='board-cell cell-number-${cellNumber}'></div>
-    //     `;
-    //     cellNumber += 1;
-    // }
+    
 }
-
-// const game = GameController();
-// let count = 0;
-
-// while(count < 9) {
-//     let activePlayer = game.getActivePlayer();
-//     console.log(`active player: ${activePlayer.name}`);
-//     let userInput = prompt("Please enter cell number(0-8) :");
-//     userInput = parseInt(userInput);
-
-//     let roundPlayed = game.playRound(activePlayer, userInput);
-
-//     count++;
-//     console.log(count);
-
-//     const winner = game.getWinner(activePlayer);
-//     if(winner===true) {
-//         console.log(`${activePlayer.name} with symbol '${activePlayer.token}' won the game.`);
-//         break;
-//     }
-// }
-
-// if(count !== 9) {
-//     console.log(`It's a tie.`);
-// }
-
 
 ScreenController();
