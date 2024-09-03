@@ -1,15 +1,45 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 .game-board {
     display: grid;
     grid-template-columns: repeat(3, 120px);
     grid-template-rows: repeat(3, 120px);
     gap: 5px;
+    
+    margin: 40px 0;
 }
 
 .board-cell {
     background-color: salmon;
     border: none;
+
+    font-size: 50px;
 }
 
-.player-turn {
+.player-turn,
+.result {
+    font-size: 28px;
+}
+
+.new-game-button {
     font-size: 20px;
+    font-weight: 600;
+
+    margin-top: 20px;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.new-game-button:hover {
+    background-color: rgb(163, 163, 163);
+}
+
+.new-game-button:active {
+    transform: translate(3px, 3px);
+    transition: 0.1s;
 }
