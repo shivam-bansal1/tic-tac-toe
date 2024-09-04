@@ -39,6 +39,7 @@ function GameBoard() {
 function GameController() {
     const playerOneName = "Player One";
     const playerTwoName = "Player Two";
+    let numberOfTokensPlaced = 0;
 
     const board = GameBoard();
 
@@ -54,6 +55,10 @@ function GameController() {
     ]
 
     let activePlayer = players[0];
+
+    const resetPlayerTurns = () => activePlayer = players[0];
+    const getTokensPlaced = () => numberOfTokensPlaced;
+    const resetTokensToZero = () => numberOfTokensPlaced = 0;
 
     const switchPlayer = () => {
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
@@ -71,7 +76,6 @@ function GameController() {
         for(let r=0; r<3; r++) {
             if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r][c+1] === gameSymbol) && 
                 (renderedGameBoard[r][c+2] === gameSymbol)) {
-                activePlayer = players[0];
                 return true;
             }
         }
@@ -81,7 +85,6 @@ function GameController() {
         for(let c=0; c<3; c++) {
             if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c] === gameSymbol) && 
                 (renderedGameBoard[r+2][c] === gameSymbol)) {
-                activePlayer = players[0];
                 return true;
             }
         }
@@ -91,7 +94,6 @@ function GameController() {
         r = 0;
         if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c+1] === gameSymbol) && 
             (renderedGameBoard[r+2][c+2] === gameSymbol)) {
-            activePlayer = players[0];
             return true;
         }
 
@@ -100,7 +102,6 @@ function GameController() {
         r = 0;
         if((renderedGameBoard[r][c] === gameSymbol) && (renderedGameBoard[r+1][c-1] === gameSymbol) && 
             (renderedGameBoard[r+2][c-2] === gameSymbol)) {
-            activePlayer = players[0];
             return true;
         }
 
@@ -112,6 +113,8 @@ function GameController() {
 
         let tokenPlaced = board.placeToken(activePlayer, cellNumber);
         if(tokenPlaced) {
+            numberOfTokensPlaced++;
+            console.log(`numberOfTokensPlaced: ${numberOfTokensPlaced}`)
             const gotAnyWinner = getWinner();
             if (gotAnyWinner) {
                 console.log(`${activePlayer.name} has won the game`);
@@ -131,7 +134,10 @@ function GameController() {
     return { getActivePlayer,
             playRound,
             getBoard: board.getBoard,
-            clearBoard: board.clearBoard
+            clearBoard: board.clearBoard,
+            getTokensPlaced,
+            resetTokensToZero,
+            resetPlayerTurns
         };
 }
 
@@ -173,7 +179,9 @@ function ScreenController() {
         const gotWinner = game.playRound(selectedCell);
         updateScreen();
 
-        if(gotWinner) {
+        const numberOfTurnsPlayed = game.getTokensPlaced();
+
+        if(gotWinner || (numberOfTurnsPlayed == 9)) {
             document.querySelector('.player-turn').innerHTML = "Game Over";
 
             // New Game Button
@@ -183,16 +191,24 @@ function ScreenController() {
             newGameButton.classList.add("new-game-button");
             containerDiv.appendChild(newGameButton);
 
+            // Display result 
+            if (numberOfTurnsPlayed == 9) 
+                document.querySelector('.result').textContent = "Game Tied!!!!";
+
             // Disable click on board after result of round    
             document.querySelector('.game-board').style.pointerEvents = 'none';
 
             document.querySelector(".new-game-button").addEventListener('click', () => {
                 game.clearBoard();
+                game.resetTokensToZero();
+                game.resetPlayerTurns();
 
                 // Enable click on board for further rounds
                 document.querySelector('.game-board').style.pointerEvents = 'auto';
                 // Remove play again button
                 document.querySelector(".new-game-button").remove();
+
+                document.querySelector('.result').textContent = "";
 
                 updateScreen();
             });
