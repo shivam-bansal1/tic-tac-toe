@@ -22,9 +22,9 @@ function Gameboard() {
 }
 
 function GameController() {
-    const board = Gameboard();
+    const gameBoard = Gameboard();
 
-    console.log(board.getBoard());
+    console.log(gameBoard.getBoard());
 
     const players = [
         {
@@ -42,11 +42,37 @@ function GameController() {
     const getActivePlayer = () => activePlayer ;
     const switchActivePlayer = () => activePlayer = activePlayer === players[0] ? players[1] : players[0];
 
+    const getWinner = (token) => {
+        let board = gameBoard.getBoard();
+        // Rows
+        if((board[0] === board[1] && board[1] === board[2] && board[0] == token) || 
+            (board[3] === board[4] && board[4] === board[5] && board[3] == token) ||
+            (board[6] === board[7] && board[7] === board[8] && board[6] == token)) 
+            return true;
+
+        // Columns
+        else if ((board[0] === board[3] && board[3] === board[6] && board[0] == token) || 
+                (board[1] === board[4] && board[4] === board[6] && board[1] == token) ||
+                (board[2] === board[5] && board[5] === board[7] && board[2] == token)) 
+            return true;
+
+        // Diagonal
+        else if ((board[0] === board[4] && board[4] === board[8] && board[0] == token)) 
+            return true;
+
+        // Anti-Diagonal
+        else if ((board[2] === board[4] && board[4] === board[6] && board[2] == token)) 
+            return true;
+
+        else 
+            return false;
+    }
     return {
         getActivePlayer,
-        getBoard: board.getBoard,
+        getBoard: gameBoard.getBoard,
         switchActivePlayer,
-        placeToken: board.placeToken,
+        placeToken: gameBoard.placeToken,
+        getWinner
     }
 }
 
@@ -55,12 +81,39 @@ const game = GameController();
 let activePlayer = game.getActivePlayer()
 console.log(`activePlayer: ${activePlayer.name}`);
 
-game.placeToken(activePlayer.token, 2);
-console.log(game.getBoard());
-
-activePlayer = game.switchActivePlayer();
-console.log(`activePlayer: ${game.getActivePlayer().name}`);
-
 game.placeToken(activePlayer.token, 0);
 console.log(game.getBoard());
+console.log(game.getWinner(activePlayer.token));
+
+activePlayer = game.switchActivePlayer();
+game.placeToken(activePlayer.token, 2);
+console.log(game.getBoard());
+console.log(game.getWinner(activePlayer.token));
+
+activePlayer = game.switchActivePlayer();
+game.placeToken(activePlayer.token, 8);
+console.log(game.getBoard());
+console.log(game.getWinner(activePlayer.token));
+
+activePlayer = game.switchActivePlayer();
+game.placeToken(activePlayer.token, 6);
+console.log(game.getBoard());
+console.log(game.getWinner(activePlayer.token));
+
+activePlayer = game.switchActivePlayer();
+game.placeToken(activePlayer.token, 5);
+console.log(game.getBoard());
+console.log(game.getWinner(activePlayer.token));
+
+activePlayer = game.switchActivePlayer();
+game.placeToken(activePlayer.token, 4);
+console.log(game.getBoard());
+console.log(game.getWinner(activePlayer.token));
+
+activePlayer = game.switchActivePlayer();
+game.placeToken(activePlayer.token, 7);
+console.log(game.getBoard());
+console.log(game.getWinner(activePlayer.token));
+console.log(activePlayer.token);
+console.log(typeof activePlayer.token);
 
