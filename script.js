@@ -4,27 +4,29 @@ Optimized Version - 1. Using Array() to make gameboard instead of 2-D matrix
 
 function Gameboard() {
     // Create game board
-    const board = Array(9).fill("");
+    let board = Array(9).fill("");
 
     // Return game board
     const getBoard = () => board;
+
+    // Clear the board
+    const clearBoard = () => {
+        board = Array(9).fill("");
+    }
     
     const placeToken = (token, cellNumber) => {
         if(board[cellNumber] === "") {
             board[cellNumber] = token;
             return true;
         }
-        return true;
+        return false;
     }
 
-    return { getBoard, 
-            placeToken };
+    return { getBoard, placeToken, clearBoard };
 }
 
 function GameController() {
     const gameBoard = Gameboard();
-
-    console.log(gameBoard.getBoard());
 
     const players = [
         {
@@ -52,8 +54,8 @@ function GameController() {
 
         // Columns
         else if ((board[0] === board[3] && board[3] === board[6] && board[0] == token) || 
-                (board[1] === board[4] && board[4] === board[6] && board[1] == token) ||
-                (board[2] === board[5] && board[5] === board[7] && board[2] == token)) 
+                (board[1] === board[4] && board[4] === board[7] && board[1] == token) ||
+                (board[2] === board[5] && board[5] === board[8] && board[2] == token)) 
             return true;
 
         // Diagonal
@@ -67,53 +69,120 @@ function GameController() {
         else 
             return false;
     }
+
+    let tokensPlaced = 0;
+    const getNumberOfTokensPlaced = () => tokensPlaced;
+
+    // Reset game for new round
+    const resetGame = () => {
+        tokensPlaced = 0;
+        activePlayer = players[0];
+        gameBoard.clearBoard();
+    }
+
+    const playRound = (cellNumber) => {
+        const playerToken = activePlayer.token;
+        const playerName = activePlayer.name;
+
+        const tokenPlaced = gameBoard.placeToken(playerToken, cellNumber);
+        if(tokenPlaced) {
+            tokensPlaced++;
+            const winner = getWinner(playerToken);
+            if(winner) {
+                return true;
+            }
+            switchActivePlayer();
+        }
+        else 
+            console.log(`Not able to place ${playerName}'s token`);
+
+        return false;
+    }
+
     return {
         getActivePlayer,
         getBoard: gameBoard.getBoard,
         switchActivePlayer,
-        placeToken: gameBoard.placeToken,
-        getWinner
+        playRound,
+        getNumberOfTokensPlaced,
+        resetGame
     }
 }
 
-const game = GameController();
 
-let activePlayer = game.getActivePlayer()
-console.log(`activePlayer: ${activePlayer.name}`);
+function ScreenController() {
+    const game = GameController();
+    const gameBoardDiv = document.querySelector(".game-board");
+    const playeTurnDiv = document.querySelector(".player-turn");
+    
+    function updateScreen() {
+        // Clear the board before updating
+        gameBoardDiv.textContent = "";
+        
+        const board = game.getBoard();
+        const activePlayer = game.getActivePlayer();
+        playeTurnDiv.textContent = `${activePlayer.name}'s Turn....`;
 
-game.placeToken(activePlayer.token, 0);
-console.log(game.getBoard());
-console.log(game.getWinner(activePlayer.token));
+        board.forEach((cell, cellNumber) => {
+            // Create button to proivde clickable space
+            const cellDiv = document.createElement("button");
+            cellDiv.classList.add("board-cell")
+            cellDiv.dataset.column = cellNumber;
+            cellDiv.textContent = cell;
 
-activePlayer = game.switchActivePlayer();
-game.placeToken(activePlayer.token, 2);
-console.log(game.getBoard());
-console.log(game.getWinner(activePlayer.token));
+            // Append cell in game board
+            gameBoardDiv.appendChild(cellDiv);
+        });
+    }
 
-activePlayer = game.switchActivePlayer();
-game.placeToken(activePlayer.token, 8);
-console.log(game.getBoard());
-console.log(game.getWinner(activePlayer.token));
+    // Place token when cell is clicked
+    gameBoardDiv.addEventListener('click', (event) => {
+        const clickedCell = event.target.dataset.column;
+        const tokensPlaced = game.getNumberOfTokensPlaced();
+        console.log(tokensPlaced);
+        const player = game.getActivePlayer();
+        if(!clickedCell)
+            return ;
 
-activePlayer = game.switchActivePlayer();
-game.placeToken(activePlayer.token, 6);
-console.log(game.getBoard());
-console.log(game.getWinner(activePlayer.token));
+        const roundResult = game.playRound(clickedCell);
+        updateScreen();
+        
+        if(roundResult || tokensPlaced===8) {
+            // Show result
+            playeTurnDiv.textContent = "Game Over!!!";
+            const resultDiv = document.querySelector(".result");
+            if(roundResult)
+                resultDiv.textContent = `${player.name} has won!!!!`;
+            else
+                resultDiv.textContent = `Game Tied!!!`;
 
-activePlayer = game.switchActivePlayer();
-game.placeToken(activePlayer.token, 5);
-console.log(game.getBoard());
-console.log(game.getWinner(activePlayer.token));
+            // Make cells click disabled
+            gameBoardDiv.style.pointerEvents = 'none';
 
-activePlayer = game.switchActivePlayer();
-game.placeToken(activePlayer.token, 4);
-console.log(game.getBoard());
-console.log(game.getWinner(activePlayer.token));
+            // New game button
+            const newGameButton = document.createElement("button");
+            newGameButton.textContent = "Play Again";
+            newGameButton.classList.add("new-game-button");
+            document.querySelector(".container").appendChild(newGameButton);
 
-activePlayer = game.switchActivePlayer();
-game.placeToken(activePlayer.token, 7);
-console.log(game.getBoard());
-console.log(game.getWinner(activePlayer.token));
-console.log(activePlayer.token);
-console.log(typeof activePlayer.token);
+            newGameButton.addEventListener('click', ()=> {
+                // Reset game
+                game.resetGame();
+                // Enable click on board for further rounds
+                gameBoardDiv.style.pointerEvents = 'auto';
+                // Remove new game button and update screen to default
+                gameBoardDiv.style.pointerEvents = 'auto';
 
+                document.querySelector(".container").removeChild(newGameButton);
+                resultDiv.textContent = "";
+
+                updateScreen();
+            });
+        }
+    });
+
+
+    updateScreen();
+}
+
+ScreenController();
